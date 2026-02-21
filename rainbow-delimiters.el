@@ -197,32 +197,19 @@ The returned value is either `rainbow-delimiters-unmatched-face',
                            rainbow-delimiters-outermost-only-face-count)))))
              "-face")))))
 
-(defconst rainbow-delimiters--term-regex (rx (1+ (or (syntax word)
-                                                     (syntax symbol)
-                                                     (syntax punctuation)
-                                                     (syntax expression-prefix))))
-  "Regex matching terms.
-
-Used to highlight first term of each level in
-`rainbow-delimiters-propertize-delimiter' if
-`rainbow-delimiters-highlight-first-term-p' is non-nil.")
-
 (defun rainbow-delimiters--end-of-first-term (end)
-  "Return the position following the first term after the opening delimiter.
+  "Return the position following the first sexp after the opening delimiter.
 
-If the first term does not appear before END or before another
+If the first sexp does not appear before END or before another
 delimiter, return nil."
-  (let* ((term-end (save-excursion
-                     (re-search-forward rainbow-delimiters--term-regex end t)))
-         (next-level (save-excursion
-                       (forward-char)   ; skip past current delim
-                       (skip-syntax-forward "^()" end)
-                       (point))))
-    (when (and term-end
-               ;; term-end came before next-level, or no next-level
-               (or (not next-level)
-                   (<= term-end next-level)))
-      term-end)))
+  (let* ((from (save-excursion
+                (skip-syntax-forward " ")     ; skip whitespace
+                (point)))
+         (sexp-end (and (< from end)
+                        (not (= 4 (logand #xFFFF (or (car (syntax-after from)) 0))))
+                        (ignore-errors (scan-sexps from 1)))))
+    (when (and sexp-end (<= sexp-end end))
+      sexp-end)))
 
 (defun rainbow-delimiters--apply-color (loc depth end open match)
   "Highlight a single delimiter at LOC according to DEPTH.
