@@ -202,14 +202,14 @@ The returned value is either `rainbow-delimiters-unmatched-face',
 
 If the first sexp does not appear before END or before another
 delimiter, return nil."
-  (save-excursion
-    (forward-char)                      ; skip past opening delim
-    (skip-syntax-forward " ")           ; skip whitespace
-    (when (< (point) end)
-      (ignore-errors
-        (let ((sexp-end (save-excursion (forward-sexp) (point))))
-          (when (<= sexp-end end)
-            sexp-end))))))
+  (let* ((from (save-excursion
+                (forward-char)                ; skip past opening delim
+                (skip-syntax-forward " ")     ; skip whitespace
+                (point)))
+         (sexp-end (and (< from end)
+                        (ignore-errors (scan-sexps from 1)))))
+    (when (and sexp-end (<= sexp-end end))
+      sexp-end)))
 
 (defun rainbow-delimiters--apply-color (loc depth end open match)
   "Highlight a single delimiter at LOC according to DEPTH.
