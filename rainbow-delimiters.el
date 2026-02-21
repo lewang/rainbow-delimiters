@@ -203,7 +203,6 @@ The returned value is either `rainbow-delimiters-unmatched-face',
 If the first sexp does not appear before END or before another
 delimiter, return nil."
   (let* ((from (save-excursion
-                (forward-char)                ; skip past opening delim
                 (skip-syntax-forward " ")     ; skip whitespace
                 (point)))
          (sexp-end (and (< from end)
