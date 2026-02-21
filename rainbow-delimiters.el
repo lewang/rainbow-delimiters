@@ -206,6 +206,7 @@ delimiter, return nil."
                 (skip-syntax-forward " ")     ; skip whitespace
                 (point)))
          (sexp-end (and (< from end)
+                        (not (= 4 (logand #xFFFF (or (car (syntax-after from)) 0))))
                         (ignore-errors (scan-sexps from 1)))))
     (when (and sexp-end (<= sexp-end end))
       sexp-end)))
